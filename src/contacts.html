@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>通讯录</title>
+    <link rel="stylesheet" href="cs.css">
+    <script>
+        async function fetchContacts() {
+            const response = await fetch('api.php?action=get');
+            const data = await response.json();
+            const contactsList = document.getElementById("contacts-list");
+            contactsList.innerHTML = '';
+            data.forEach(contact => {
+                contactsList.innerHTML += `
+                    <tr>
+                        <td>${contact.姓名}</td>
+                        <td>${contact.手机号}</td>
+                        <td>${contact.归属地}</td>
+                        <td>${contact.备注}</td>
+                        <td>
+                            <button onclick="populateForm('${contact.姓名}', '${contact.手机号}', '${contact.归属地}', '${contact.备注}')">修改</button>
+                            <button onclick="deleteContact('${contact.姓名}')">删除</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function populateForm(姓名, 手机号, 归属地, 备注) {
+            document.getElementById("姓名").value = 姓名;
+            document.getElementById("手机号").value = 手机号;
+            document.getElementById("归属地").value = 归属地;
+            document.getElementById("备注").value = 备注;
+        }
+
+        async function addContact() {
+            const 姓名 = document.getElementById("姓名").value;
+            const 手机号 = document.getElementById("手机号").value;
+            const 归属地 = document.getElementById("归属地").value;
+            const 备注 = document.getElementById("备注").value;
+
+            await fetch('api.php?action=add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `姓名=${姓名}&手机号=${手机号}&归属地=${归属地}&备注=${备注}`
+            });
+            clearForm();
+            fetchContacts(); // 刷新联系人列表
+        }
+
+        async function editContact() {
+            const 姓名 = document.getElementById("姓名").value;
+            const 手机号 = document.getElementById("手机号").value;
+            const 归属地 = document.getElementById("归属地").value;
+            const 备注 = document.getElementById("备注").value;
+
+            await fetch('api.php?action=edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `姓名=${姓名}&手机号=${手机号}&归属地=${归属地}&备注=${备注}`
+            });
+            clearForm();
+            fetchContacts(); // 刷新联系人列表
+        }
+
+        async function deleteContact(姓名) {
+            await fetch('api.php?action=delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `姓名=${姓名}`
+            });
+            fetchContacts(); // 刷新联系人列表
+        }
+
+        function clearForm() {
+            document.getElementById("姓名").value = '';
+            document.getElementById("手机号").value = '';
+            document.getElementById("归属地").value = '';
+            document.getElementById("备注").value = '';
+        }
+
+        window.onload = fetchContacts;
+    </script>
+</head>
+<body>
+<h1>通讯录管理</h1>
+<div class="container">
+    <div class="form-container">
+        <input type="text" id="姓名" placeholder="姓名">
+        <input type="text" id="手机号" placeholder="手机号">
+        <input type="text" id="归属地" placeholder="归属地">
+        <input type="text" id="备注" placeholder="备注">
+        <button onclick="addContact()">添加</button>
+        <button onclick="editContact()">保存</button>
+    </div>
+
+    <h2>联系人</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>手机号</th>
+                <th>归属地</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="contacts-list"></tbody>
+    </table>
+</div>
+</body>
+</html>
